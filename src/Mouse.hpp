@@ -34,8 +34,8 @@ struct MouseDelta{
 
 struct MouseState
 {
-	int x;
-	int y;
+	float x;
+	float y;
 	bool lmb;
 
 	MouseState()

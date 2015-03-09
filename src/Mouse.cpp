@@ -66,8 +66,8 @@ struct MouseState Mouse::readDevice()
 		m_mouse_cooldown--;
 	}
 
-	s.x = (int)(xpos * Scale);
-	s.y = (int)(ypos * Scale);
+	s.x = (xpos * Scale);
+	s.y = (ypos * Scale);
 
 
 	return s;
