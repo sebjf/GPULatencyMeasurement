@@ -13,6 +13,28 @@
 #include <GL/glext.h>
 #include "Mouse.hpp"
 
+/*
+ * xorg.conf section for the Asus VG248QE showing modeline settings for driving it at 144Hz. Note that nvidia-settings
+ * must be used to specify these timings before they are used.
+ */
+/*
+ Section "Monitor"
+    Identifier     "Monitor1"
+    VendorName     "Unknown"
+    ModelName      "Ancor Communications Inc VG248"
+#    HorizSync       30.0 - 160.0
+#    VertRefresh     50.0 - 150.0
+
+#http://ubuntuforums.org/showthread.php?t=1994729&page=2
+
+    Option "ModeValidation" "NoEdidModes"
+    Option "ExactModeTimingsDVI" "TRUE"
+    Modeline "1280x720x144" 143.5  1280 1304 1336 1360   720 723 728 733 +HSync -VSync
+
+EndSection
+
+ */
+
 using namespace std;
 
 Mouse* mouse;
@@ -118,6 +140,7 @@ void draw()
 
     glutSwapBuffers();   // swapping image buffer for double buffering
     glutPostRedisplay(); // redrawing. Omit this line if you don't want constant redraw
+    glFinish();
 }
 
 int main(int argc, char** argv)
@@ -128,24 +151,53 @@ int main(int argc, char** argv)
 	/* Prepare the conditions for this measurement */
 
 	bool b_vsyncenabled = true;
-	bool b_singlebuffered = false;
+	bool b_doublebuffered = true;
+
+	if (argc > 0)
+	{
+		switch(atoi(argv[1]))
+		{
+		case 1:
+			b_vsyncenabled = true;
+			b_doublebuffered = true;
+			break;
+		case 2:
+			b_vsyncenabled = false;
+			b_doublebuffered = true;
+			break;
+		case 3:
+			b_vsyncenabled = true;
+			b_doublebuffered = false;
+			break;
+		case 4:
+			b_vsyncenabled = true;
+			b_doublebuffered = false;
+			break;
+		}
+	}
 
 	unsigned int displayModeFlags = GLUT_RGBA;
-	if(b_singlebuffered){
-		displayModeFlags |= GLUT_SINGLE;
-	}else{
+	if(b_doublebuffered){
 		displayModeFlags |= GLUT_DOUBLE;
+	}else{
+		displayModeFlags |= GLUT_SINGLE;
+	}
+
+	unsigned int swap_interval = 0;
+	if(b_vsyncenabled > 0)
+	{
+		swap_interval = 1;
 	}
 
 	/* Initialise the device and display */
 
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA); // enabling double buffering and RGBA
-    glutInitWindowSize(600, 600);
+    glutInitDisplayMode(displayModeFlags); // enabling double buffering and RGBA
+    glutInitWindowSize(1280, 720);
     glutCreateWindow("OpenGL"); // creating the window
     glutFullScreen();           // making the window full screen
     PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalSGI = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddress( (const GLubyte*)"glXSwapIntervalSGI");
-    glXSwapIntervalSGI((int)b_vsyncenabled);
+    glXSwapIntervalSGI(swap_interval);
 
     glDisable(GL_LIGHTING);
 
